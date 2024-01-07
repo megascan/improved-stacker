@@ -5,24 +5,24 @@
 		Please DO NOT reupload this tool (verbatim or small tweaks) to the workshop or other public file-sharing websites.
 		I actively maintain this tool, so reuploading it may lead to people using outdated, buggy, or malicious copies.
 		If there is an issue with the tool, LET ME KNOW via one of the following pages:
-		
+
 		- GitHub:    https://github.com/Mista-Tea/improved-stacker
 		- Workshop:  http://steamcommunity.com/sharedfiles/filedetails/?id=264467687
 		- Facepunch: https://facepunch.com/showthread.php?t=1399120
-	
+
 	Author:
 		- Original            :: OverloadUT (STEAM_0:1:5250809)
 		- Updated for GMod 13 :: Marii      (STEAM_0:1:16015332)
 		- Rewritten           :: Mista Tea  (STEAM_0:0:27507323)
-	
+
 	Changelog:
-		- May 27th, 2014 :: Added to GitHub 
-		- May 28th, 2014 :: Added to Workshop 
-		- Jun 5th,  2014 :: Massive overhaul 
-		- Jul 24th, 2014 :: Large update 
-		- Aug 12th, 2014 :: Optimizations 
-		- Jun 30th, 2015 :: Bug fixes/features 
-		- Jul 11th, 2015 :: Bug fixes 
+		- May 27th, 2014 :: Added to GitHub
+		- May 28th, 2014 :: Added to Workshop
+		- Jun 5th,  2014 :: Massive overhaul
+		- Jul 24th, 2014 :: Large update
+		- Aug 12th, 2014 :: Optimizations
+		- Jun 30th, 2015 :: Bug fixes/features
+		- Jul 11th, 2015 :: Bug fixes
 		- Oct 26th, 2015 :: Bug fixes
 		- Aug 3rd,  2016 :: Bug fixes
 		- Aug 31st, 2016 :: Bug fixes
@@ -36,7 +36,7 @@
 		- May 10th, 2020 :: Fixed unstable clientside ghosts caused by ents.CreateClientProp changes
 		- Jun 18th, 2020 :: Clientside performance improvement when tool is not selected
 		- Apr 30th, 2021 :: Added German language support
-		
+
 		Fixes:
 			- Prevented crash from players using very high X/Y/Z offset values.
 			- Prevented crash from players using very high P/Y/R rotate values.
@@ -45,7 +45,7 @@
 			- Fixed massive FPS drop from halos being rendered in a Think hook instead of a PreDrawHalos hook.
 			- Fixed materials and color saving when duping stacked props.
 			- Fixed incorrect stack angles when trying to create a stack on an existing stack.
-			
+
 		Tweaks:
 			- Added convenience functions to retrieve the client convars.
 			- Added option to enable/disable automatically applying materials to the stacked props.
@@ -54,7 +54,7 @@
 			- Added support for props with multiple skins.
 			- Added support for external prop protections/anti-spam addons with the StackerEntity hook.
 			- Modified NoCollide to actually no-collide each stacker prop with every other prop in the stack.
-			
+
 			- Added console variables for server operators to limit various parts of stacker.
 				> stacker_improved_max_per_player         <-inf/inf> (less than 0 == no limit)
 				> stacker_improved_max_per_stack          <-inf/inf> (less than 0 == no limit)
@@ -89,10 +89,6 @@ local mode = TOOL.Mode -- defined by the name of this file (default should be st
 --------------------------------------------------------------------------]]
 --
 -- needed for localization support (depends on GMod locale: "gmod_language")
-include("improvedstacker/localify.lua")
-localify.LoadSharedFile("improvedstacker/localization.lua") -- loads the file containing localized phrases
-local L = localify.Localize -- used for translating string tokens into localized phrases
-local prefix = "#tool." .. "improved_stacker." -- prefix used for this tool's localization tokens
 -- needed for various stacker functionality
 include("improvedstacker/improvedstacker.lua")
 improvedstacker.Initialize(mode)
@@ -124,7 +120,6 @@ local tobool = tobool
 local CurTime = CurTime
 local surface = surface
 local IsValid = IsValid
-local localify = localify
 local language = language
 local tonumber = tonumber
 local GetConVar = GetConVar
@@ -135,12 +130,9 @@ local concommand = concommand
 local LocalPlayer = LocalPlayer
 local CreateConVar = CreateConVar
 local improvedstacker = improvedstacker
-local GetConVarNumber = GetConVarNumber
 local RunConsoleCommand = RunConsoleCommand
 local IN_USE = IN_USE
 local NOTIFY_ERROR = NOTIFY_ERROR or 1
-local MOVETYPE_NONE = MOVETYPE_NONE
-local SOLID_VPHYSICS = SOLID_VPHYSICS
 local RENDERMODE_TRANSALPHA = RENDERMODE_TRANSALPHA
 local TRANSPARENT = Color(255, 255, 255, 150)
 local MIN_NOTIFY_BITS = 3 -- the minimum number of bits needed to send a NOTIFY enum
@@ -152,7 +144,7 @@ local showSettings = false
 --------------------------------------------------------------------------]]
 --
 TOOL.Category = "Construction"
-TOOL.Name = L(prefix .. "name")
+TOOL.Name = "Stacker"
 
 TOOL.Information = {
 	"left", "right", {
@@ -200,15 +192,14 @@ if CLIENT then
 	-- Language Settings
 	--------------------------------------------------------------------------]]
 	--
-	language.Add("tool." .. "improved_stacker.name", L(prefix .. "name"))
-	language.Add("tool." .. "improved_stacker.desc", L(prefix .. "desc"))
-	--language.Add( "tool.".."improved_stacker.0",            L(prefix.."0") )
-	language.Add("tool." .. "improved_stacker.left", L(prefix .. "left"))
-	language.Add("tool." .. "improved_stacker.shift_left", L(prefix .. "shift_left"))
-	language.Add("tool." .. "improved_stacker.right", L(prefix .. "right"))
-	language.Add("tool." .. "improved_stacker.shift_right", L(prefix .. "shift_right"))
-	language.Add("tool." .. "improved_stacker.reload", L(prefix .. "reload"))
-	language.Add("Undone_" .. mode, L("Undone_" .. mode))
+	language.Add("tool." .. "improved_stacker.name", "Stacker")
+	language.Add("tool." .. "improved_stacker.desc", "Stack ")
+	language.Add("tool." .. "improved_stacker.left", "Left")
+	language.Add("tool." .. "improved_stacker.shift_left", "Shift Left")
+	language.Add("tool." .. "improved_stacker.right", "Right")
+	language.Add("tool." .. "improved_stacker.shift_right", "Shift Right")
+	language.Add("tool." .. "improved_stacker.reload", "Reload")
+	language.Add("Undone_stacker_improved", "Undone")
 
 	--[[--------------------------------------------------------------------------
 	-- Net Messages
@@ -218,7 +209,7 @@ if CLIENT then
 	-- 	Net :: <toolmode>_error( string )
 	--]]
 	--
-	net.Receive("improved_stacker_error", function(bytes)
+	net.Receive("improved_stacker_error", function()
 		surface.PlaySound("buttons/button10.wav")
 		notification.AddLegacy(net.ReadString(), net.ReadUInt(MIN_NOTIFY_BITS), NOTIFY_DURATION)
 	end)
@@ -242,7 +233,7 @@ local oldWeld        = GetConVar( "stacker_force_weld" )      and GetConVar( "st
 local oldNoCollide   = GetConVar( "stacker_force_nocollide" ) and GetConVar( "stacker_force_nocollide" ):GetInt() or 0
 local oldDelay       = GetConVar( "stacker_delay" )           and GetConVar( "stacker_delay" ):GetFloat()         or 0.25
 ]]
-local cvarFlags, cvarFlagsNotify
+local cvarFlags
 
 if SERVER then
 	cvarFlags = bit.bor(FCVAR_REPLICATED, FCVAR_SERVER_CAN_EXECUTE, FCVAR_ARCHIVE)
@@ -271,7 +262,7 @@ local cvarMaxOffZ = CreateConVar("improved_stacker_max_offsetz", oldMaxOffZ:GetF
 local cvarFreeze = CreateConVar("improved_stacker_force_freeze", oldFreeze:GetInt(), cvarFlagsNotif, "Determines whether props should be forced to spawn frozen or not")
 local cvarWeld = CreateConVar("improved_stacker_force_weld", oldWeld:GetInt(), cvarFlagsNotif, "Determines whether props should be forced to spawn welded or not")
 local cvarNoCollide = CreateConVar("improved_stacker_force_nocollide", oldNoCollide:GetInt(), cvarFlagsNotif, "Determines whether props should be forced to spawn nocollided or not")
-local cvarNoCollideAll = CreateConVar("improved_stacker_force_nocollide_all", 0, cvarFlags, "(EXPERIMENTAL, DISABLED) Determines whether props should be nocollide with everything except players, vehicles, and npcs")
+CreateConVar("improved_stacker_force_nocollide_all", 0, cvarFlags, "(EXPERIMENTAL, DISABLED) Determines whether props should be nocollide with everything except players, vehicles, and npcs")
 local cvarStayInWorld = CreateConVar("improved_stacker_force_stayinworld", oldStayInWorld:GetInt(), cvarFlagsNotif, "Determines whether props should be restricted to spawning inside the world or not (addresses possible crashes)")
 
 --[[--------------------------------------------------------------------------
@@ -279,21 +270,21 @@ local cvarStayInWorld = CreateConVar("improved_stacker_force_stayinworld", oldSt
 --------------------------------------------------------------------------]]
 --
 if CLIENT then
-	concommand.Add("improved_stacker_reset_offsets", function(ply, cmd, args)
+	concommand.Add("improved_stacker_reset_offsets", function()
 		-- reset all of the offset values to 0
 		RunConsoleCommand("improved_stacker_offsetx", "0.00")
 		RunConsoleCommand("improved_stacker_offsety", "0.00")
 		RunConsoleCommand("improved_stacker_offsetz", "0.00")
 	end)
 
-	concommand.Add("improved_stacker_reset_angles", function(ply, cmd, args)
+	concommand.Add("improved_stacker_reset_angles", function()
 		-- reset all of the angle values to 0
 		RunConsoleCommand("improved_stacker_pitch", "0.00")
 		RunConsoleCommand("improved_stacker_yaw", "0.00")
 		RunConsoleCommand("improved_stacker_roll", "0.00")
 	end)
 
-	concommand.Add("improved_stacker_reset_admin", function(ply, cmd, args)
+	concommand.Add("improved_stacker_reset_admin", function()
 		for cmd, val in pairs(improvedstacker.SETTINGS_DEFAULT) do
 			RunConsoleCommand(cmd, val)
 		end
@@ -304,52 +295,39 @@ elseif SERVER then
 		-- true:          allow
 		-- false:         block
 		-- nil (default): fallback to a ply:IsAdmin() check
-		local result, reason = hook.Run("StackerConVar", ply, cmd, arg)
+		local result, _ = hook.Run("StackerConVar", ply, cmd, arg)
 
 		-- if a player ran the command and the server didn't explicitly allow them to change the cvar
 		if IsValid(ply) and result ~= true then
 			-- if the server blocked the change, send the player an error
-			if result == false then
-				ply:PrintMessage(HUD_PRINTTALK, L(prefix .. "error_blocked_by_server", localify.GetLocale(ply)) .. (isstring(reason) and ": " .. reason or ""))
-
-				return false
-			end
-
+			if result == false then return false end
 			-- if the server didn't give a response, fallback to a ply:IsAdmin() check
-			if result == nil and not ply:IsAdmin() then
-				ply:PrintMessage(HUD_PRINTTALK, L(prefix .. "error_not_admin", localify.GetLocale(ply)) .. ": " .. cmd)
-
-				return false
-			end
+			if result == nil and not ply:IsAdmin() then return false end
 		end
 
 		-- lastly, ensure the argument is a valid number before returning true
-		if not tonumber(arg) then
-			ply:PrintMessage(HUD_PRINTTALK, L(prefix .. "error_invalid_argument", localify.GetLocale(ply)))
-
-			return false
-		end
+		if not tonumber(arg) then return false end
 
 		return true
 	end
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_max_per_player", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_max_per_player", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_max_per_player", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_max_per_player", args[1])
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_max_per_stack", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_max_per_stack", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_max_per_stack", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_max_per_stack", args[1])
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_max_offset", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_max_offset", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_max_offset", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_max_offsetx", args[1])
 		RunConsoleCommand("improved_stacker_max_offsety", args[1])
@@ -358,63 +336,63 @@ elseif SERVER then
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_max_offsetx", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_max_offsetx", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_max_offsetx", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_max_offsetx", args[1])
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_max_offsety", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_max_offsety", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_max_offsety", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_max_offsety", args[1])
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_max_offsetz", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_max_offsetz", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_max_offsetz", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_max_offsetz", args[1])
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_force_stayinworld", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_force_stayinworld", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_force_stayinworld", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_force_stayinworld", tobool(args[1]) and "1" or "0")
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_force_freeze", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_force_freeze", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_force_freeze", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_force_freeze", tobool(args[1]) and "1" or "0")
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_force_weld", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_force_weld", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_force_weld", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_force_weld", tobool(args[1]) and "1" or "0")
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_force_nocollide", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_force_nocollide", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_force_nocollide", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_force_nocollide", tobool(args[1]) and "1" or "0")
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_force_nocollide_all", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_force_nocollide_all", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_force_nocollide_all", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_force_nocollide_all", tobool(args[1]) and "1" or "0")
 	end)
 
 	--[[-------------------------------------------------------------]]
 	--
-	concommand.Add("improved_stacker_set_delay", function(ply, cmd, args)
+	concommand.Add("improved_stacker_set_delay", function(ply, _, args)
 		if not validateCommand(ply, "improved_stacker_set_delay", args[1]) then return false end
 		RunConsoleCommand("improved_stacker_delay", args[1])
 	end)
@@ -452,7 +430,7 @@ end
 --	with servers that don't want to limit the number of Stacker props a player can spawn directly.
 --	They may still hit cvars like sbox_maxprops before ever hitting stacker_max_per_player.
 --
---	As an example case, if players are crashing your servers by spawning 50 welded chairs 
+--	As an example case, if players are crashing your servers by spawning 50 welded chairs
 --	and unfreezing them all at once, you can set stacker_max_per_player to 30 so that at any
 --	given time they can only have 30 props created by Stacker. Trying to stack any more props
 --	would give the player an error message.
@@ -603,7 +581,7 @@ end
 
 --[[--------------------------------------------------------------------------
 -- 	TOOL:ShouldGhostAll()
---	Returns true if the stacked props should all be ghosted or if only the 
+--	Returns true if the stacked props should all be ghosted or if only the
 --	first stacked prop should be ghosted.
 --]]
 --
@@ -734,10 +712,6 @@ function TOOL:LeftClick(tr, isRightClick)
 
 	-- check if the player's stack size is higher than the server's max allowed size (but only if the server didn't explictly override it)
 	if maxCount >= 0 then
-		if count > maxCount then
-			self:SendError(L(prefix .. "error_max_per_stack", localify.GetLocale(self:GetOwner())) .. maxCount)
-		end
-
 		count = math.Clamp(count, 0, maxCount)
 	end
 
@@ -747,14 +721,8 @@ function TOOL:LeftClick(tr, isRightClick)
 	-- we call StackerDelay to let external mods to set their own delays (less than or equal to 0 means no delay)
 	-- delay time is in seconds (e.g. 0.1 is a tenth of a second)
 	local delay = hook.Run("StackerDelay", ply, lastStackTime) or self:GetDelay()
-
 	-- check if the player is trying to use stacker too quickly
-	if lastStackTime + delay > CurTime() then
-		self:SendError(L(prefix .. "error_too_quick", localify.GetLocale(self:GetOwner())))
-
-		return false
-	end
-
+	if lastStackTime + delay > CurTime() then return false end
 	improvedstacker.SetLastStackTime(ply, CurTime())
 	local stackDirection = self:GetDirection()
 	local stackMode = self:GetStackerMode()
@@ -797,12 +765,7 @@ function TOOL:LeftClick(tr, isRightClick)
 	for i = 1, count do
 		-- check if the player has too many active stacker props spawned out already
 		local stackerEntsSpawned = self:GetNumberPlayerEnts()
-
-		if maxPerPlayer >= 0 and stackerEntsSpawned >= maxPerPlayer then
-			self:SendError(("%s (%s)"):format(L(prefix .. "error_max_per_player", localify.GetLocale(self:GetOwner())), maxPerPlayer))
-			break
-		end
-
+		if maxPerPlayer >= 0 and stackerEntsSpawned >= maxPerPlayer then break end
 		-- check if the player has exceeded the sbox_maxprops cvar
 		if not self:GetSWEP():CheckLimit("props") then break end
 		-- check if external admin mods are blocking this entity
@@ -819,13 +782,8 @@ function TOOL:LeftClick(tr, isRightClick)
 		entPos = entPos + direction * distance + offset
 		-- rotate the next stacked entity's angle by the client's rotation values
 		improvedstacker.RotateAngle(stackMode, stackDirection, entAng, stackRotation)
-
 		-- check if the stacked props would be spawned outside of the world
-		if stayInWorld and not util.IsInWorld(entPos) then
-			self:SendError(L(prefix .. "error_not_in_world", localify.GetLocale(self:GetOwner())))
-			break
-		end
-
+		if stayInWorld and not util.IsInWorld(entPos) then break end
 		-- create the new stacked entity
 		newEnt = ents.Create("prop_physics")
 		newEnt:SetModel(entMod)
@@ -846,7 +804,7 @@ function TOOL:LeftClick(tr, isRightClick)
 
 		-- decrement the total number of active stacker props spawned by the player by 1
 		-- when the prop gets removed in any way
-		newEnt:CallOnRemove("UpdateStackerTotal", function(ent, ply)
+		newEnt:CallOnRemove("UpdateStackerTotal", function(_, ply)
 			-- if the player is no longer connected, there is nothing to do
 			if not IsValid(ply) then return end
 			improvedstacker.DecrementEntCount(ply)
@@ -987,7 +945,7 @@ end
 --	Attempts to freeze the stacked props in place.
 --]]
 --
-function TOOL:ApplyFreeze(ply, ent)
+function TOOL:ApplyFreeze(_, ent)
 	if self:ShouldForceFreeze() or self:ShouldApplyFreeze() then
 		ent:GetPhysicsObject():EnableMotion(false)
 	else
@@ -1007,12 +965,7 @@ function TOOL:ApplyWeld(lastEnt, newEnt)
 	local forceLimit = 0
 	local isNocollided = self:ShouldForceNoCollide() or self:ShouldApplyNoCollide()
 	local deleteOnBreak = false
-	local ok, err = pcall(constraint.Weld, lastEnt, newEnt, 0, 0, forceLimit, isNocollided, deleteOnBreak)
-
-	if not ok then
-		print(mode .. ": " .. L(prefix .. "error_max_constraints") .. " (error: " .. err .. ")")
-		self:SendError(mode .. ": " .. L(prefix .. "error_max_constraints", localify.GetLocale(self:GetOwner())))
-	end
+	local ok, _ = pcall(constraint.Weld, lastEnt, newEnt, 0, 0, forceLimit, isNocollided, deleteOnBreak)
 
 	return ok
 end
@@ -1029,12 +982,7 @@ function TOOL:ApplyNoCollide(lastEnt, newEnt)
 	-- we can skip this function if the client is trying to weld -and- nocollide, because
 	-- constraint.Weld already has a nocollide parameter
 	if self:ShouldForceWeld() or self:ShouldApplyWeld() then return true end
-	local ok, err = pcall(constraint.NoCollide, lastEnt, newEnt, 0, 0)
-
-	if not ok then
-		print(mode .. ": " .. L(prefix .. "error_max_constraints") .. " (error: " .. err .. ")")
-		self:SendError(mode .. ": " .. L(prefix .. "error_max_constraints", localify.GetLocale(self:GetOwner())))
-	end
+	local ok, _ = pcall(constraint.NoCollide, lastEnt, newEnt, 0, 0)
 
 	return ok
 end
@@ -1043,9 +991,9 @@ end
 --
 -- 	TOOL:ApplyPhysicalProperties( entity, entity, number, table )
 --
---	Attempts to apply the original entity's Gravity/Physics Material properties 
+--	Attempts to apply the original entity's Gravity/Physics Material properties
 --	and weight onto the stacked propa.
---	
+--
 --]]
 --
 function TOOL:ApplyPhysicalProperties(original, newEnt, boneID, properties)
@@ -1227,7 +1175,7 @@ if CLIENT then
 		local ghost
 
 		-- loop for the total stack size and create a new ghost prop
-		for i = 1, count do
+		for _ = 1, count do
 			ghost = ClientsideModel(entMod)
 			if not IsValid(ghost) then continue end
 			ghost:SetModel(entMod)
@@ -1296,7 +1244,6 @@ if CLIENT then
 		local stackRelative = shouldStackRelative()
 		local applyMat = shouldApplyMaterial()
 		local applyCol = shouldApplyColor()
-		local lastEnt = ent
 		local entPos = ent:GetPos()
 		local entAng = ent:GetAngles()
 		local entMat = ent:GetMaterial()
@@ -1305,7 +1252,6 @@ if CLIENT then
 		local direction, offset
 		-- we only need to calculate the distance once based on the direction the user selected
 		local distance = improvedstacker.GetDistance(stackMode, stackDirection, ent)
-		local ghost
 		local ghosts = improvedstacker.GetGhosts()
 
 		for i = 1, #ghosts do
@@ -1334,9 +1280,9 @@ if CLIENT then
 	--
 	-- 	Hook :: PreDrawHalos
 	--
-	--	Loads the hook that draws halos on the ghosted entities in the stack. 
+	--	Loads the hook that draws halos on the ghosted entities in the stack.
 	--
-	--	This is the appropriate hook to create halos, NOT TOOL:Think(). The latter 
+	--	This is the appropriate hook to create halos, NOT TOOL:Think(). The latter
 	--	will be called way more than it needs to be and causes horrible FPS drops in singleplayer.
 	--]]
 	--
@@ -1367,7 +1313,7 @@ if CLIENT then
 		-- check if the current toolobject is valid before trying to use it --
 		-- commenting this out for now since I refactored these TOOL functions
 		-- into just local functions to ditch the need for the tool object
-		--[[local tool = wep.GetToolObject and wep:GetToolObject() 
+		--[[local tool = wep.GetToolObject and wep:GetToolObject()
 		if ( not ( tool and tool.GetOwner and IsValid( tool:GetOwner() ) ) ) then
 			return
 		end]]
@@ -1413,7 +1359,7 @@ if CLIENT then
 	--	Draws the 2D x/y/z axis when looking at entities with the stacker tool.
 	--]]
 	--
-	hook.Add("PostDrawTranslucentRenderables", "improved_stacker_directions", function(drawingDepth, drawingSky)
+	hook.Add("PostDrawTranslucentRenderables", "improved_stacker_directions", function(_, drawingSky)
 		if drawingSky then return end
 		-- check if the player has fully initialized
 		local ply = LocalPlayer()
@@ -1455,9 +1401,9 @@ if CLIENT then
 		local rs = (pos + r * 50 - u * 5):ToScreen()
 		local us = (pos + u * 55):ToScreen()
 		local ang = ent:GetAngles()
-		local front = ("%s%s"):format(cvarAxisLbl:GetBool() and L(prefix .. "hud_front") .. " " or "", cvarAxisAng:GetBool() and "(" .. ang.x .. ")" or "")
-		local right = ("%s%s"):format(cvarAxisLbl:GetBool() and L(prefix .. "hud_right") .. " " or "", cvarAxisAng:GetBool() and "(" .. ang.y .. ")" or "")
-		local upwrd = ("%s%s"):format(cvarAxisLbl:GetBool() and L(prefix .. "hud_up") .. " " or "", cvarAxisAng:GetBool() and "(" .. ang.z .. ")" or "")
+		local front = ("%s%s"):format(cvarAxisLbl:GetBool() and "front" .. " " or "", cvarAxisAng:GetBool() and "(" .. ang.x .. ")" or "")
+		local right = ("%s%s"):format(cvarAxisLbl:GetBool() and "right" .. " " or "", cvarAxisAng:GetBool() and "(" .. ang.y .. ")" or "")
+		local upwrd = ("%s%s"):format(cvarAxisLbl:GetBool() and "up" .. " " or "", cvarAxisAng:GetBool() and "(" .. ang.z .. ")" or "")
 		cam.Start2D()
 		draw.SimpleTextOutlined(front, "improved_stacker_direction", fs.x, fs.y, RED, 0, 0, 1, BLACK)
 		draw.SimpleTextOutlined(right, "improved_stacker_direction", rs.x, rs.y, GREEN, 0, 0, 1, BLACK)
@@ -1482,7 +1428,7 @@ if CLIENT then
 			MenuButton = 1,
 			Folder = mode,
 			Options = {
-				[L(prefix .. "combobox_default")] = {
+				["Default"] = {
 					["improved_stacker_mode"] = tostring(improvedstacker.MODE_PROP),
 					["improved_stacker_direction"] = tostring(improvedstacker.DIRECTION_UP),
 					["improved_stacker_count"] = "1",
@@ -1514,85 +1460,65 @@ if CLIENT then
 		}
 
 		local relativeOptions = {
-			[L(prefix .. "combobox_world")] = {
+			["World"] = {
 				["improved_stacker_mode"] = improvedstacker.MODE_WORLD
 			},
-			[L(prefix .. "combobox_prop")] = {
+			["Local"] = {
 				["improved_stacker_mode"] = improvedstacker.MODE_PROP
 			},
 		}
 
 		local relative = {
-			Label = L(prefix .. "label_relative"),
+			Label = "Relative",
 			MenuButton = "0",
 			Options = relativeOptions
 		}
 
 		local directionOptions = {
-			["1 - " .. L(prefix .. "combobox_direction_front")] = {
+			["1 - Front"] = {
 				["improved_stacker_direction"] = improvedstacker.DIRECTION_FRONT
 			},
-			["2 - " .. L(prefix .. "combobox_direction_back")] = {
+			["2 - Back"] = {
 				["improved_stacker_direction"] = improvedstacker.DIRECTION_BACK
 			},
-			["3 - " .. L(prefix .. "combobox_direction_right")] = {
+			["3 - Right"] = {
 				["improved_stacker_direction"] = improvedstacker.DIRECTION_RIGHT
 			},
-			["4 - " .. L(prefix .. "combobox_direction_left")] = {
+			["4 - Left"] = {
 				["improved_stacker_direction"] = improvedstacker.DIRECTION_LEFT
 			},
-			["5 - " .. L(prefix .. "combobox_direction_up")] = {
+			["5 - Up"] = {
 				["improved_stacker_direction"] = improvedstacker.DIRECTION_UP
 			},
-			["6 - " .. L(prefix .. "combobox_direction_down")] = {
+			["6 - Down"] = {
 				["improved_stacker_direction"] = improvedstacker.DIRECTION_DOWN
 			},
 		}
 
 		local directions = {
-			Label = L(prefix .. "label_direction"),
+			Label = "Direction",
 			MenuButton = "0",
 			Options = directionOptions
 		}
 
-		-- populate the table of valid languages that clients can switch between
-		local languageOptions = {}
-
-		for code, tbl in pairs(localify.GetLocalizations()) do
-			if not L(prefix .. "language_" .. code, code) then continue end
-
-			languageOptions[L(prefix .. "language_" .. code, code)] = {
-				localify_language = code
-			}
-		end
-
-		local languages = {
-			Label = L(prefix .. "label_language"),
-			MenuButton = 0,
-			Options = languageOptions,
-		}
-
-		cpanel:AddControl("ComboBox", languages)
-		cpanel:ControlHelp("\n" .. L(prefix .. "label_credits"))
-
 		cpanel:AddControl("Label", {
-			Text = L(prefix .. "label_presets")
+			Text = "Presets"
 		})
 
 		cpanel:AddControl("ComboBox", presets)
 
 		cpanel:AddControl("Checkbox", {
-			Label = L(prefix .. "checkbox_freeze"),
+			Label = "Freeze",
 			Command = "improved_stacker_freeze"
 		})
 
 		cpanel:AddControl("Checkbox", {
-			Label = L(prefix .. "checkbox_weld"),
+			Label = "Weld",
 			Command = "improved_stacker_weld"
 		})
 
 		cpanel:AddControl("Checkbox", {
-			Label = L(prefix .. "checkbox_nocollide"),
+			Label = "No Collide",
 			Command = "improved_stacker_nocollide"
 		})
 
@@ -1600,7 +1526,7 @@ if CLIENT then
 		cpanel:AddControl("ComboBox", directions)
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_count"),
+			Label = "Count",
 			Min = 1,
 			Max = cvarMaxPerStack:GetInt(),
 			Command = "improved_stacker_count",
@@ -1608,12 +1534,12 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Button", {
-			Label = L(prefix .. "label_reset_offsets"),
+			Label = "Reset Offsets",
 			Command = "improved_stacker_reset_offsets"
 		})
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_x"),
+			Label = "X",
 			Type = "Float",
 			Min = -cvarMaxOffX:GetInt(),
 			Max = cvarMaxOffX:GetInt(),
@@ -1622,7 +1548,7 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_y"),
+			Label = "Y",
 			Type = "Float",
 			Min = -cvarMaxOffY:GetInt(),
 			Max = cvarMaxOffY:GetInt(),
@@ -1631,7 +1557,7 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_z"),
+			Label = "Z",
 			Type = "Float",
 			Min = -cvarMaxOffZ:GetInt(),
 			Max = cvarMaxOffZ:GetInt(),
@@ -1640,12 +1566,12 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Button", {
-			Label = L(prefix .. "label_reset_angles"),
+			Label = "Reset Angles",
 			Command = "improved_stacker_reset_angles"
 		})
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_pitch"),
+			Label = "Pitch",
 			Type = "Float",
 			Min = -MAX_ANGLE,
 			Max = MAX_ANGLE,
@@ -1654,7 +1580,7 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_yaw"),
+			Label = "Yaw",
 			Type = "Float",
 			Min = -MAX_ANGLE,
 			Max = MAX_ANGLE,
@@ -1663,7 +1589,7 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Slider", {
-			Label = L(prefix .. "label_roll"),
+			Label = "Roll",
 			Type = "Float",
 			Min = -MAX_ANGLE,
 			Max = MAX_ANGLE,
@@ -1672,70 +1598,70 @@ if CLIENT then
 		})
 
 		cpanel:AddControl("Button", {
-			Label = L(prefix .. "label_" .. (showSettings and "hide" or "show") .. "_settings"),
+			Label = (showSettings and "Hide" or "Show") .. " Settings",
 			Command = "improved_stacker_show_settings"
 		})
 
 		if showSettings then
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_use_shift_key"),
+				Label = "Use Shift Key",
 				Command = "improved_stacker_use_shift_key",
 				Description = "Toggles the ability to hold SHIFT and click the left and right mouse buttons to change stack size"
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_relative"),
+				Label = "Relative",
 				Command = "improved_stacker_relative",
 				Description = "Stacks each prop relative to the prop right before it. This allows you to create curved stacks"
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_material"),
+				Label = "Material",
 				Command = "improved_stacker_material",
 				Description = "Applies the material of the original prop to all stacked props"
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_color"),
+				Label = "Color",
 				Command = "improved_stacker_color",
 				Description = "Applies the color of the original prop to all stacked props"
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_physprop"),
+				Label = "Physics",
 				Command = "improved_stacker_physprop",
 				Description = "Applies the physical properties of the original prop to all stacked props"
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_ghost"),
+				Label = "Ghost",
 				Command = "improved_stacker_ghostall",
 				Description = "Creates every ghost prop in the stack instead of just the first ghost prop"
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_axis"),
+				Label = "Draw Axis",
 				Command = "improved_stacker_draw_axis",
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_axis_labels"),
+				Label = "Axis Labels",
 				Command = "improved_stacker_axis_labels",
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_axis_angles"),
+				Label = "Axis Angles",
 				Command = "improved_stacker_axis_angles",
 			})
 
 			cpanel:AddControl("Checkbox", {
-				Label = L(prefix .. "checkbox_halo"),
+				Label = "Halos",
 				Command = "improved_stacker_draw_halos",
 				Description = "Gives halos to all of the props in to ghosted stack"
 			})
 
 			cpanel:AddControl("Slider", {
-				Label = L(prefix .. "label_opacity"),
+				Label = "Opacity",
 				Type = "Integer",
 				Min = 0,
 				Max = 255,
@@ -1743,7 +1669,7 @@ if CLIENT then
 			})
 
 			cpanel:AddControl("Color", {
-				Label = L(prefix .. "checkbox_halo_color"),
+				Label = "Halo Color",
 				Red = "improved_stacker_halo_r",
 				Green = "improved_stacker_halo_g",
 				Blue = "improved_stacker_halo_b",
@@ -1752,21 +1678,13 @@ if CLIENT then
 		end
 	end
 
-	concommand.Add("improved_stacker_show_settings", function(ply, cmd, args)
+	concommand.Add("improved_stacker_show_settings", function()
 		local cpanel = controlpanel.Get(mode)
 		if not IsValid(cpanel) then return end
 		showSettings = not showSettings
 		cpanel:ClearControls()
 		buildCPanel(cpanel)
 	end)
-
-	-- listen for changes to the localify language and reload the tool's menu to update the localizations
-	cvars.AddChangeCallback("localify_language", function(name, old, new)
-		local cpanel = controlpanel.Get(mode)
-		if not IsValid(cpanel) then return end
-		cpanel:ClearControls()
-		buildCPanel(cpanel)
-	end, "improvedstacker")
 
 	TOOL.BuildCPanel = buildCPanel
 
@@ -1779,17 +1697,17 @@ if CLIENT then
 	--]]
 	--
 	hook.Add("PopulateToolMenu", "improved_stackerAdminUtilities", function()
-		spawnmenu.AddToolMenuOption("Utilities", "Admin", "improved_stacker_utils", L(prefix .. "name"), "", "", function(cpanel)
+		spawnmenu.AddToolMenuOption("Utilities", "Admin", "improved_stacker_utils", "Stacker", "", "", function(cpanel)
 			-- quick presets for default settings
 			local presets = {
 				label = "Presets",
 				menubutton = 1,
 				folder = "improved_stacker_admin",
 				options = {
-					[L(prefix .. "combobox_default")] = improvedstacker.SETTINGS_DEFAULT,
-					[L(prefix .. "combobox_sandbox")] = improvedstacker.SETTINGS_SANDBOX,
-					[L(prefix .. "combobox_darkrp")] = improvedstacker.SETTINGS_DARKRP,
-					[L(prefix .. "combobox_singleplayer")] = improvedstacker.SETTINGS_SINGLEPLAYER,
+					["default"] = improvedstacker.SETTINGS_DEFAULT,
+					["sandbox"] = improvedstacker.SETTINGS_SANDBOX,
+					["darkrp"] = improvedstacker.SETTINGS_DARKRP,
+					["singleplayer"] = improvedstacker.SETTINGS_SINGLEPLAYER,
 				},
 				cvars = {
 					{
@@ -1842,7 +1760,7 @@ if CLIENT then
 				ctrl:AddOption(k, v)
 			end
 
-			for k, v in pairs(presets.cvars) do
+			for _, v in pairs(presets.cvars) do
 				ctrl:AddConVar(v)
 			end
 
@@ -1896,7 +1814,7 @@ if CLIENT then
 
 			cpanel:AddItem(sliderlist)
 
-			for k, data in pairs(sliders) do
+			for _, data in pairs(sliders) do
 				local list = vgui.Create("DListLayout", sliderlist)
 				list:DockPadding(5, 0, 5, 5)
 				list:DockMargin(0, 2, 0, 0)
@@ -1908,7 +1826,7 @@ if CLIENT then
 
 				local decimals = data.Decimals or 2
 				local slider = vgui.Create("StackerDNumSlider", list)
-				slider:SetText(L(prefix .. "label_" .. data.String))
+				slider:SetText(data.String)
 				slider.Label:SetFont("DermaDefaultBold")
 				slider:SetMinMax(data.Min, data.Max)
 				slider:SetDark(true)
@@ -1922,28 +1840,7 @@ if CLIENT then
 					RunConsoleCommand(cmd, value)
 				end
 
-				if L(prefix .. "help_" .. data.String) then
-					local help = vgui.Create("DLabel", list)
-					help:SetText(L(prefix .. "help_" .. data.String))
-					help:DockMargin(10, 0, 5, 0)
-					help:SetWrap(true)
-					help:SetDark(true)
-					help:SetAutoStretchVertical(true)
-					help:SetFont("DermaDefault")
-				end
-
-				if L(prefix .. "warning_" .. data.String) then
-					local help = vgui.Create("DLabel", list)
-					help:SetText(L(prefix .. "warning_" .. data.String))
-					help:DockMargin(10, 0, 5, 0)
-					help:SetWrap(true)
-					help:SetDark(true)
-					help:SetAutoStretchVertical(true)
-					help:SetFont("DermaDefault")
-					help:SetTextColor(Color(200, 0, 0))
-				end
-
-				cvars.AddChangeCallback("improved_stacker_" .. data.String, function(name, old, new)
+				cvars.AddChangeCallback("improved_stacker_" .. data.String, function()
 					if not IsValid(slider) then return end
 					slider:SetValue(GetConVar("improved_stacker_" .. data.String):GetFloat(), true)
 				end, "improved_stacker_" .. data.String .. "_utilities")
@@ -1961,7 +1858,7 @@ if CLIENT then
 
 			cpanel:AddItem(cblist)
 
-			for k, data in pairs(checkboxes) do
+			for _, data in pairs(checkboxes) do
 				local list = vgui.Create("DListLayout", cblist)
 				list:DockPadding(5, 5, 5, 5)
 				list:DockMargin(0, 2, 0, 0)
@@ -1972,7 +1869,7 @@ if CLIENT then
 				end
 
 				local cb = vgui.Create("DCheckBoxLabel", list)
-				cb:SetText(L(prefix .. "checkbox_" .. data))
+				cb:SetText(data)
 				cb:SetChecked(GetConVar("improved_stacker_force_" .. data):GetBool())
 				cb.Label:SetFont("DermaDefaultBold")
 				cb:SizeToContents()
@@ -1987,14 +1884,14 @@ if CLIENT then
 					RunConsoleCommand("improved_stacker_set_force_" .. data, bool and "1" or "0")
 				end
 
-				cvars.AddChangeCallback("improved_stacker_force_" .. data, function(name, old, new)
+				cvars.AddChangeCallback("improved_stacker_force_" .. data, function(_, _, new)
 					if not IsValid(cb) then return end
 					cb:SetChecked(tobool(new))
 				end, "improved_stacker_" .. data .. "_utilities")
 
-				if L(prefix .. "help_" .. data) then
+				if data then
 					local help = vgui.Create("DLabel", list)
-					help:SetText(L(prefix .. "help_" .. data))
+					help:SetText(data)
 					help:DockMargin(25, 5, 5, 0)
 					help:SetWrap(true)
 					help:SetDark(true)
@@ -2002,9 +1899,9 @@ if CLIENT then
 					help:SetFont("DermaDefault")
 				end
 
-				if L(prefix .. "warning_" .. data) then
+				if data then
 					local help = vgui.Create("DLabel", list)
-					help:SetText(L(prefix .. "warning_" .. data))
+					help:SetText(data)
 					help:DockMargin(25, 5, 5, 0)
 					help:SetWrap(true)
 					help:SetDark(true)

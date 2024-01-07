@@ -1,9 +1,9 @@
 --[[--------------------------------------------------------------------------
 	Improved Stacker Module
-	
+
 	Author:
 		Mista-Tea ([IJWTB] Thomas)
-	
+
 	License:
 		The MIT License (MIT)
 
@@ -35,7 +35,6 @@ local Angle = Angle
 local Vector = Vector
 local GetConVar = GetConVar
 local duplicator = duplicator
-local CreateConVar = CreateConVar
 --[[--------------------------------------------------------------------------
 -- 	Namespace Tables
 --------------------------------------------------------------------------]]
@@ -161,7 +160,7 @@ if SERVER then
 
 		--[[--------------------------------------------------------------------------
 		--  Hook :: PlayerInitialSpawn
-		
+
 		--	Sets the newly connected player's total stacker ents to 0.
 		--	See TOOL:IsExceedingMax() for more details
 		--]]
@@ -187,7 +186,7 @@ if SERVER then
 		--	collision-checked in GM.ShouldCollide.
 		--]]
 		--
-		function MarkEntity(ply, ent, data)
+		function MarkEntity(_, ent, _)
 			m_Ents[ent] = true
 
 			duplicator.StoreEntityModifier(ent, mode, {
@@ -220,7 +219,7 @@ if SERVER then
 		-- 	CanUnfreeze( player, entity, physObject )
 		--]]
 		--
-		function CanUnfreeze(ply, ent, phys)
+		function CanUnfreeze(_, ent, _)
 			if m_Ents[ent] then
 				print("nope")
 
@@ -514,7 +513,7 @@ end
 --	return anything.
 --]]
 --
-function RotateAngle(stackMode, stackDir, angle, rotation)
+function RotateAngle(_, stackDir, angle, rotation)
 	local axisPitch, axisYaw, axisRoll = RotationFunctions[stackDir](angle)
 	angle:RotateAroundAxis(axisPitch, rotation.p)
 	angle:RotateAroundAxis(axisYaw, -rotation.y)
