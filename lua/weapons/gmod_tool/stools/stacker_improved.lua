@@ -1057,15 +1057,15 @@ if CLIENT then
 	-- rely on the TOOL object (which can be problematic when trying to use it inside a hook).
 	-- these should be pretty much identical to the TOOL functions created near the top of this file
 	local function getStackSize()
-		return cvarCount:GetInt()
+		return cvarCount and cvarCount:GetInt() or 5
 	end
 
 	local function getMaxPerStack()
-		return cvarMaxPerStack:GetInt()
+		return cvarMaxPerStack and cvarMaxPerStack:GetInt() or 5
 	end
 
 	local function getStackerMode()
-		return cvarMode:GetInt()
+		return cvarMode and cvarMode:GetInt() or 1
 	end
 
 	local function getDirection()
